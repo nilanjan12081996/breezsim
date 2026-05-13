@@ -16,10 +16,29 @@ export const getBreezData = createAsyncThunk(
         }
     }
 )
+
+export const getBreezDataSearch = createAsyncThunk(
+    'getBreezDataSearch',
+    async (query, { rejectWithValue }) => {
+        try {
+            const response = await api.get(`/api/list/search?country=${query}`);
+            if (response?.data?.statusCode === 200) {
+                return response?.data;
+            } else {
+                return rejectWithValue(response);
+            }
+        } catch (error) {
+            return rejectWithValue(error);
+        }
+    }
+)
+
+
 const initialState={
     loading:false,
     breezData:[],
-    error:false
+    error:false,
+    searchData:[]
 }
 const ListSlice=createSlice(
     {
@@ -27,7 +46,8 @@ const ListSlice=createSlice(
         initialState,
         reducers:{},
         extraReducers:(builder)=>{
-            builder.addCase(getBreezData.pending,(state)=>{
+            builder
+            .addCase(getBreezData.pending,(state)=>{
                 state.loading=true
             })
             .addCase(getBreezData.fulfilled,(state,{payload})=>{
@@ -36,6 +56,18 @@ const ListSlice=createSlice(
                 state.error=false
             })
             .addCase(getBreezData.rejected,(state,{payload})=>{
+                state.loading=false
+                state.error=payload
+            })
+              .addCase(getBreezDataSearch.pending,(state)=>{
+                state.loading=true
+            })
+            .addCase(getBreezDataSearch.fulfilled,(state,{payload})=>{
+                state.loading=false
+                state.searchData=payload
+                state.error=false
+            })
+            .addCase(getBreezDataSearch.rejected,(state,{payload})=>{
                 state.loading=false
                 state.error=payload
             })
